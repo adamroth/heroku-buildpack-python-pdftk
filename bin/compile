@@ -159,6 +159,20 @@ mkdir -p $(dirname $PROFILE_PATH)
 # Install Python.
 source $BIN_DIR/steps/python
 
+# Install pdftk
+if [ ! -f .heroku/vendor/lib/libgcj.so.12 ]; then
+  echo "Downloading libgcj (for pdftk)"
+  mkdir -p .heroku/vendor/lib
+  curl https://s3-us-west-2.amazonaws.com/morty-systems/binaries/libgcj.so.12 -o .heroku/vendor/lib/libgcj.so.12
+fi
+
+if [ ! -f .heroku/vendor/bin/pdftk ]; then
+  echo "Downloading pdftk"
+  mkdir -p .heroku/vendor/bin
+  curl https://s3-us-west-2.amazonaws.com/morty-systems/binaries/pdftk -o .heroku/vendor/bin/pdftk
+  chmod a+rx .heroku/vendor/bin/pdftk
+fi
+
 # Sanity check for setuptools/distribute.
 source $BIN_DIR/steps/setuptools
 
@@ -188,11 +202,11 @@ sub-env $BIN_DIR/steps/collectstatic
 #
 
 # Set context environment variables.
-set-env PATH '$HOME/.heroku/python/bin:$PATH'
+set-env PATH '$HOME/.heroku/python/bin:/app/vendor/bin/pdftk:$PATH'
 set-env PYTHONUNBUFFERED true
 set-env PYTHONHOME /app/.heroku/python
 set-env LIBRARY_PATH '/app/.heroku/vendor/lib:/app/.heroku/python/lib:$LIBRARY_PATH'
-set-env LD_LIBRARY_PATH '/app/.heroku/vendor/lib:/app/.heroku/python/lib:$LD_LIBRARY_PATH'
+set-env LD_LIBRARY_PATH '/app/.heroku/vendor/lib:/app/.heroku/python/lib:/app/vendor/bin/pdftk:$LD_LIBRARY_PATH'
 set-default-env LANG en_US.UTF-8
 set-default-env PYTHONHASHSEED random
 set-default-env PYTHONPATH /app/
